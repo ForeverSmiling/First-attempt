@@ -16,12 +16,17 @@ class MainCloud(pygame.sprite.Sprite):
     if rect:
       self.rect = rect
   def update(self, w,h):
+    """
+    reacts on mouse moving
+    """
     if pygame.mouse.get_focused():
       mouse_pos = pygame.mouse.get_pos()
-      print mouse_pos
       real_pos = (int(mouse_pos[0] - mouse_pos[0] % 10), int(mouse_pos[1]- mouse_pos[1] % 10))
       self.rect.topleft = real_pos
   def move(self, keys):
+    """
+    reacts on arrows press
+    """
     xMove = 0;
     yMove = 0;
     if (keys[K_RIGHT]):
