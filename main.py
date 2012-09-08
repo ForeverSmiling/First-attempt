@@ -3,54 +3,14 @@ __author__ = 'fs'
 import os,sys
 import pygame
 from pygame.locals import *
-from helpers import *
-
-class MainCloud(pygame.sprite.Sprite):
-  def __init__(self,rect=None):
-    pygame.sprite.Sprite.__init__(self)
-    self.image, self.rect = load_image('cloud10x10.gif',-1)
-    self.x_dist = 10
-    self.y_dist = 10
-    screen = pygame.display.get_surface()
-    self.area = screen.get_rect()
-    if rect:
-      self.rect = rect
-  def move(self, keys):
-    xMove = 0;
-    yMove = 0;
-    if (keys[K_RIGHT]):
-      xMove = self.x_dist
-    elif (keys[K_LEFT]):
-      xMove = -self.x_dist
-    if (keys[K_UP]):
-      yMove = -self.y_dist
-    elif (keys[K_DOWN]):
-      yMove = self.y_dist
-    newpos = self.rect.move((xMove,yMove))
-    if self.area.contains(newpos):
-      self.rect = newpos
-
-class SubCloud(MainCloud):
-  def __init__(self, rect=None):
-    MainCloud.__init__(self)
-    self.image, self.rect = load_image('cloud_black.gif',-1)
-    if rect:
-      self.rect = rect
-    self.isAlive = False
-  def move(self):
-    return
-
-class Grass(pygame.sprite.Sprite):
-  def __init__(self,rect=None):
-    pygame.sprite.Sprite.__init__(self)
-    self.image, self.rect = load_image('grass.gif')
-    if rect:
-      self.rect = rect
+from sprites import *
 
 class MainGame:
   def __init__(self, width=640, height=480):
     pygame.init();
     pygame.key.set_repeat(1*1, 1*125)
+    pygame.display.set_caption('The Game of Life')
+    #pygame.mouse.set_visible(0)
     self.width = width
     self.height = height
     self.screen = pygame.display.set_mode((self.width, self.height))
@@ -78,7 +38,6 @@ class MainGame:
     top_n = [str((rl,rt-10))]
     bottom_n = [str((rl,rt+10))]
     return all_left_n+all_right_n+top_n+bottom_n
-
   def _recalcSubClouds(self):
     clouds_must_die = []
     clouds_alive = []
@@ -118,8 +77,8 @@ class MainGame:
       for event in pygame.event.get():
         if event.type == pygame.QUIT:
           sys.exit()
-        elif event.type == pygame.KEYDOWN:
-          if (event.key == K_RETURN):
+        elif event.type == pygame.KEYDOWN or (pygame.mouse.get_focused() and event.type == pygame.MOUSEBUTTONDOWN):
+          if event.type == pygame.KEYDOWN and event.key == K_RETURN:
             self._changePlayMode()
             if self.isPlayMode:
               self.grass_sprites.draw(self.screen)
@@ -127,7 +86,7 @@ class MainGame:
               pygame.display.flip()
           elif not self.isPlayMode:
             pressed_buttons = pygame.key.get_pressed()
-            if pressed_buttons[K_SPACE]:
+            if (event.type == pygame.KEYDOWN and pressed_buttons[K_SPACE]) or event.type == pygame.MOUSEBUTTONDOWN:
               current_SubCloud = self.array_of_black_clouds[self._rectToString(self.mainCloud.rect)]
               current_SubCloud.isAlive = not current_SubCloud.isAlive
               black_cpouds_in_rect = self._get_black_clouds_in_rect(current_SubCloud.rect)
@@ -145,6 +104,7 @@ class MainGame:
       self.grass_sprites.draw(self.screen)
       self.black_clouds_sprites.draw(self.screen)
       if not self.isPlayMode:
+        self.cloud_sprites.update(self.width, self.height)
         self.cloud_sprites.draw(self.screen)
       pygame.display.flip()
 
